@@ -1,5 +1,7 @@
 import pytest
 
+collect_ignore = ["setup.py"]
+
 
 def pytest_addoption(parser):
     parser.addoption(
