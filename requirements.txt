@@ -1,6 +1,5 @@
 transformers==4.6.1
 mlflow==1.15.0
 # dev
-black==19.10b0
-flake8==3.7.9
 pytest==5.2.1
+pre-commit==2.13.0
