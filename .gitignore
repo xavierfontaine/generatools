@@ -1,0 +1,12 @@
+/*egg-info/
+*.pyc
+*.swp
+*/__pycache__/*
+*/.pytest_cache/*
+*.cache/
+/data/*.*
+!/data/.gitkeep
+!/data/README.md
+/data/in/*.*
+!/data/in/.gitkeep
+/data/in/joke-dataset/*.*
