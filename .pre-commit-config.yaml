@@ -9,3 +9,11 @@ repos:
     hooks:
     - id: flake8
       args: ['--ignore=E501,W503', --max-line-length=79]
+-   repo: local
+    hooks:
+    -   id: tests
+        name: run tests
+        entry: pytest -v
+        language: system
+        types: [python]
+        stages: [push]  # Run only when trying to push
