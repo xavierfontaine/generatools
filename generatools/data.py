@@ -2,6 +2,7 @@ import torch
 import transformers as trf
 import tqdm
 import logging
+import copy
 from typing import List, Union
 
 import generatools.utils.logging as utils_logging
@@ -200,3 +201,30 @@ class GPTDataset(torch.utils.data.Dataset):
 
     def __len__(self):
         return len(self.tok_data)
+
+
+# TODO : docstr
+def gpttokenizer_collate_fn(dicts_list: List[dict]) -> dict:
+    """
+    Collate_fn for a list of outputs of GPT2Tokenizer.
+
+    To be used as value for the collate_fn argument in torch.data.Datalaoder .
+    """
+    gpttok_dtypes = {
+        "input_ids": torch.long,
+        "labels": torch.long,
+        "attention_mask": torch.float,
+    }
+    # Init
+    keys = dicts_list[0].keys()
+    out_dict = dict()
+    # Transform into list of list dict
+    for k in keys:
+        out_dict[k] = [dic[k] for dic in dicts_list]
+    # Create labels
+    out_dict["labels"] = copy.deepcopy(out_dict["input_ids"])
+    # Create tensors
+    out_dict = {
+        k: torch.Tensor(v).type(gpttok_dtypes[k]) for k, v in out_dict.items()
+    }
+    return out_dict

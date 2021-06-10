@@ -1,6 +1,7 @@
 import pytest
 import transformers as trf
 import unittest
+import torch.utils.data
 
 from generatools import data
 
@@ -111,3 +112,55 @@ class TestGPTDataset(unittest.TestCase):
         exp_lens = [4, 1]
         obs_lens = [len(d["input_ids"]) for d in dataset]
         assert exp_lens == obs_lens
+
+
+class TestDataLoader(unittest.TestCase):
+    """
+    Integration of data.GPTDataset + data.gpttokenizer_collate_fn in pytorch
+    dataloader
+    """
+
+    def setUp(self):
+        self.tokenizer = trf.GPT2Tokenizer.from_pretrained(
+            "distilgpt2",
+            pad_token="<|pad|>",
+            special_bos="<|spec_bos|>",
+            special_eos="<|spec_eos|>",
+        )
+        self.texts = [
+            "I am Will Smith",
+            "I love cow boys and I'm Prince of Bel Air",
+            "Hey",
+        ]
+        self.max_len = 11
+        dataset = data.GPTDataset(
+            texts=self.texts,
+            tokenizer=self.tokenizer,
+            padding=True,
+            max_length=self.max_len,
+        )
+        dataloader = torch.utils.data.DataLoader(
+            dataset=dataset,
+            batch_size=3,
+            num_workers=0,
+            pin_memory=True,
+            collate_fn=data.gpttokenizer_collate_fn,
+            drop_last=True,
+        )
+        self.dataloader_out = dataloader.__iter__().next()
+
+    @pytest.mark.slow
+    def test_integration_dataloader(self):
+        self.correct_keys()
+        self.correct_sizes()
+
+    def correct_keys(self):
+        assert self.dataloader_out.keys() == set(
+            ["input_ids", "attention_mask", "labels"]
+        )
+
+    def correct_sizes(self):
+        assert self.dataloader_out["input_ids"].shape == (
+            len(self.texts),
+            self.max_len,
+        )
