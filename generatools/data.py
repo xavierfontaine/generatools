@@ -4,7 +4,7 @@ import transformers as trf
 import tqdm
 import logging
 import copy
-from typing import List, Union
+from typing import List, Union, Optional
 
 import generatools.utils.logging as utils_logging
 
@@ -231,16 +231,37 @@ def gpttokenizer_collate_fn(dicts_list: List[dict]) -> dict:
     return out_dict
 
 
-# TODO : docstring
-# TODO : test to make sure everything stays the same every time
-# TODO : test to make sure val and test don't move even when changing train_subsample_prop
 def splitter(
     dataset: torch.utils.data.Dataset,
     val_prop: int,
     test_prop: int,
     train_subsample_prop: float,
-    seed: int,
+    seed: Optional[int],
 ) -> List[torch.utils.data.Dataset]:
+    """Split dataset into train/test/val
+
+    The val and test datasets are the same irrespective of the subsamplif of
+    the train dataset through `train_subsample_prop`. This allows playing with
+    the train test size without affecting val and test metrics.
+
+    Parameters
+    ----------
+    dataset : torch.utils.data.Dataset
+        dataset
+    val_prop : int
+        val_prop
+    test_prop : int
+        test_prop
+    train_subsample_prop : float
+        train_subsample_prop
+    seed : int
+        seed
+
+    Returns
+    -------
+    List[torch.utils.data.Dataset]
+        (train dataset, val dataset, test dataset)
+    """
     dataset_n = len(dataset)
     # Get sizes
     val_size = round(val_prop * dataset_n)

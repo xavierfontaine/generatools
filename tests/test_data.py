@@ -164,3 +164,68 @@ class TestDataLoader(unittest.TestCase):
             len(self.texts),
             self.max_len,
         )
+
+
+class DummyDataset(torch.utils.data.Dataset):
+    """
+    For testing data.splitter
+    """
+
+    def __init__(self):
+        self.data = [[1, 2], [3], [4, 5, 6], [7]]
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, idx):
+        return self.data[idx]
+
+
+class TestSplitter(unittest.TestCase):
+    def setUp(self):
+        # Dummy dataset class
+        self.dataset = DummyDataset()
+
+    def test_stability(self):
+        splits_1 = data.splitter(
+            dataset=self.dataset,
+            val_prop=0.2,
+            test_prop=0.2,
+            train_subsample_prop=1,
+            seed=1,
+        )
+        splits_2 = data.splitter(
+            dataset=self.dataset,
+            val_prop=0.2,
+            test_prop=0.2,
+            train_subsample_prop=1,
+            seed=1,
+        )
+        assert splits_1 == splits_2
+
+    def test_subsample_train_works(self):
+        splits_subsamble = data.splitter(
+            dataset=self.dataset,
+            val_prop=0.2,
+            test_prop=0.2,
+            train_subsample_prop=1 / 3,
+            seed=1,
+        )
+        assert len(splits_subsamble[0]) == 1
+
+    def test_val_test_stable_when_subsample_train(self):
+        splits_1 = data.splitter(
+            dataset=self.dataset,
+            val_prop=0.2,
+            test_prop=0.2,
+            train_subsample_prop=1,
+            seed=1,
+        )
+        splits_subsamble = data.splitter(
+            dataset=self.dataset,
+            val_prop=0.2,
+            test_prop=0.2,
+            train_subsample_prop=1 / 3,
+            seed=1,
+        )
+        assert splits_1[1:] == splits_subsamble[1:]
