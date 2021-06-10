@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 import transformers as trf
 import tqdm
@@ -228,3 +229,47 @@ def gpttokenizer_collate_fn(dicts_list: List[dict]) -> dict:
         k: torch.Tensor(v).type(gpttok_dtypes[k]) for k, v in out_dict.items()
     }
     return out_dict
+
+
+# TODO : docstring
+# TODO : test to make sure everything stays the same every time
+# TODO : test to make sure val and test don't move even when changing train_subsample_prop
+def splitter(
+    dataset: torch.utils.data.Dataset,
+    val_prop: int,
+    test_prop: int,
+    train_subsample_prop: float,
+    seed: int,
+) -> List[torch.utils.data.Dataset]:
+    dataset_n = len(dataset)
+    # Get sizes
+    val_size = round(val_prop * dataset_n)
+    test_size = round(test_prop * dataset_n)
+    train_size = dataset_n - (val_size + test_size)
+    # Shuffle Ids
+    ids = list(range(dataset_n))
+    np.random.seed(seed)
+    np.random.shuffle(ids)
+    # Get ranges
+    first_val_idx = train_size
+    first_test_idx = first_val_idx + val_size
+    # Subset
+    dataset_train = dataset[:first_val_idx]
+    dataset_val = dataset[first_val_idx:first_test_idx]
+    dataset_test = dataset[first_test_idx:]
+    # Logging
+    logger.info(
+        f"Split datasets into train ({len(dataset_train)} rows), val"
+        f" ({len(dataset_val)}) and test ({len(dataset_test)})"
+    )
+    # Subsampling train dataset
+    assert 0 < train_subsample_prop <= 1
+    if train_subsample_prop < 1:
+        previous_train_len = len(dataset_train)
+        last_train_idx = round(len(dataset_train) * train_subsample_prop)
+        dataset_train = dataset_train[:last_train_idx]
+        logger.info(
+            f"Subsetted the train dataset, keeping only {len(dataset_train)}/"
+            f"{previous_train_len} rows ({int(train_subsample_prop*100)}%).)"
+        )
+    return dataset_train, dataset_val, dataset_test
