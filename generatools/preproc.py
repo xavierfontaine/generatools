@@ -24,6 +24,33 @@ def prompt_formatter(
     If both are specified, kws should be one element longer than txts (see
     example)
 
+    Parameters
+    ----------
+    intro : str
+        intro
+    kws : Optional[List[List[str]]]
+        kws
+    txts : Optional[List[str]]
+        txts
+    ex_sep : str
+        ex_sep
+    ex_add_numeral : bool
+        ex_add_numeral
+    ex_postnum_starter : str
+        ex_postnum_starter
+    ex_kws_lhs : str
+        ex_kws_lhs
+    ex_kws_sep : str
+        ex_kws_sep
+    ex_kws_rhs : str
+        ex_kws_rhs
+    ex_txts_lhs : str
+        ex_txts_lhs
+    ex_txts_rhs : str
+        ex_txts_rhs
+    remove_right_trailing_space : bool
+        remove_right_trailing_space
+
     Returns
     -------
     str
