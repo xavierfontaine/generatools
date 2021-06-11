@@ -50,8 +50,8 @@ logger = logging.getLogger(__name__)
 
 **Exceptions**
 
-If you need to raise an error, use `mnemgen.utils.logging.log_and_raise`. It will
-both log an error and raise an exception.
+If you want to both raise an error and log it, you can use 
+`mnemgen.utils.logging.log_and_raise`.
 
 **Typing hint**
 
