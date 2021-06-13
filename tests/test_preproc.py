@@ -1,6 +1,6 @@
 import unittest
 import pytest
-from generatools.preproc import prompt_formatter, make_prompt_from_examples
+from generatools.preproc import prompt_formatter, make_prompt_w_keywords_new
 
 
 class TestPromptFormatter(unittest.TestCase):
@@ -122,25 +122,12 @@ class TestPromptFormatter(unittest.TestCase):
         assert exp_out == obs_out
 
 
-# TODO : test que run avec et sans keywords, avec et sans texte
-class TestMakePromptFromExamples(unittest.TestCase):
-    def test_works_with_keywords_and_text(self):
-        self.fail()
-
-    def test_works_with_keywords_and_no_text(self):
-        try:
-            make_prompt_from_examples(
-                examples=[[["hey", "lad"], None]],
-                keywords_new=["howdy"],
-            )
-        except Exception as e:
-            self.fail(f"Failed upon running. Error: {e}")
-
-    def test_works_with_no_keywords_but_text(self):
-        self.fail()
-
-    def test_works_when_examples_is_empty_list(self):
-        self.fail()
-
-    def test_fail_when_examples_are_too_short(self):
-        self.fail()
+def test_make_prompt_w_keywords_new():
+    obs_out = make_prompt_w_keywords_new(
+        kws=[["hey "]],
+        txts=["Jude"],
+        keywords_new=["don't ", "be"],
+        ex_sep="\n",
+    )
+    exp_out = "hey Jude\ndon't be"
+    assert exp_out == obs_out

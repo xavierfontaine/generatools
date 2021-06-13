@@ -1,3 +1,4 @@
+import copy
 from typing import List, Optional
 
 
@@ -128,70 +129,29 @@ def prompt_formatter(
     return prompt
 
 
-def make_prompt_from_examples(
-    intro: Optional[str] = None,
-    examples: Optional[List[List]] = None,
+def make_prompt_w_keywords_new(
+    intro: Optional[str] = "",
+    kws: Optional[List[List[str]]] = None,
+    txts: Optional[List[str]] = None,
     keywords_new: Optional[List[str]] = None,
     **kwargs,
 ) -> str:
-    """Construct a prompt for generation
+    """Make prompt with kws and txts, ,using additional keywords
 
-    Make a prompt from an intro, example (keywords, sentence) pairs and a
-    new set of keywords. This function is a simple wrapper around
-    `prompt_formatter`. It constructs `kws` and `txts`, and
-    pass them to that function together with `intro` and `kwargs`.
-    See docstring for `prompt_formater` for more on the purpose and output.
+    This function is a simple wrapper around `prompt_formatter`, which
+    essentially does kws += keywords_new, plus sanity checks,
+    before passing these all to `prompt_formatter`.
 
-    `examples` and `keywords_new` (which replace kws and txts) are as follow:
-    - `examples` is a list. Each example is a [[keywords1, keywords2, ...], txt]
-      pair. The keywords list is left empty if none. The text should be set to
-      None if none.
-    - `keywords_new` is a tuple [keyword1, keyword2, ...] of additionnal
-      keywords with no associated text, and will be append at the end of `kws`.
-
-    Other arguments are the same as in `prompt_formatter`
-
-    This construction allows for a more visual association between keywords and
-    text wrt to `prompt_formatter`.
-
-    Parameters
-    ----------
-    intro : Optional[str]
-        intro
-    examples : Optional[List[List]]
-        examples
-    keywords_new : Optional[List[str]]
-        keywords_new
-    kwargs :
-        kwargs
-
-    Returns
-    -------
-    str
+    See the documentation for `prompt_formatter` for more.
     """
-    # Sanity
-    _check_make_prompt_from_examples_args_sanity(
-        examples=examples, keywords_new=keywords_new
-    )
-    # Get keywords
-    kws = [kw for kw, sent in examples]
-    examples_include_keywords = any([len(k) > 0 for k in kws])
-    if not examples_include_keywords:
-        kws = None
-    if _new_keywords_provided:
-        kws.append(keywords_new)
-    # Get sentences
-    txts = [sent for kw, sent in examples]
-    examples_include_sents = any([len(t) > 0 for t in txts])
-    if not examples_include_sents:
-        txts = None
-    # Sanity checks on keywords
-    if (keywords_new is not None) != examples_include_keywords:
+    if (kws is None) != (keywords_new is None):
         raise ValueError(
-            "There should be either keywords through both `examples` and"
-            " `keywords_new` or no keywords at all."
+            "Either kws and keywords_new are both specified,"
+            " or both are set to None"
         )
-    # Getting the prompt
+    if kws is not None:
+        kws = copy.deepcopy(kws)
+        kws.append(keywords_new)
     prompt = prompt_formatter(
         intro=intro,
         kws=kws,
@@ -199,45 +159,3 @@ def make_prompt_from_examples(
         **kwargs,
     )
     return prompt
-
-
-def _new_keywords_provided(keywords_new: Optional[List]) -> bool:
-    """Consider keywords_new is provided if keywords_new is neither None nor an empty list"""
-    if keywords_new is None:
-        return False
-    elif isinstance(keywords_new, list):
-        if len(keywords_new) == 0:
-            return False
-    else:
-        return True
-
-
-def _check_make_prompt_from_examples_args_sanity(
-    keywords_new: Optional[List],
-    examples: Optional[List[List]],
-) -> None:
-    """Check keywords_new is either None or a list of strings"""
-    # keywords_new should be None or list
-    if (keywords_new is not None) and (not isinstance(keywords_new, list)):
-        raise ValueError("keywords_new should be list or None")
-    # If keywords_new is not empty, should be list of str
-    if isinstance(keywords_new, list):
-        if len(keywords_new) != 0:
-            if not all([isinstance(x, str) for x in keywords_new]):
-                raise ValueError("Elements of keywords_new should be str")
-    # Either keywords in examples and keywords_new are given, or none of them
-    # are given
-    kws = [kw for kw, sent in examples]
-    examples_include_keywords = any([len(k) > 0 for k in kws])
-    if (keywords_new is not None) != examples_include_keywords:
-        raise ValueError(
-            "There should be either keywords through both `examples` and"
-            " `keywords_new` or no keywords at all."
-        )
-    # Each example should be of length 2
-    all_examples_are_length_2 = all([len(e) == 2 for e in examples])
-    if not all_examples_are_length_2:
-        raise ValueError(
-            "All examples should be lists of length 2. So docstring on writing"
-            " examples without keywords or text."
-        )
