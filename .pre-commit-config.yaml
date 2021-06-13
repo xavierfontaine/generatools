@@ -14,7 +14,7 @@ repos:
     -   id: tests
         name: run tests
         entry: pytest 
-        args: ['-v', '--runslow', './tests/']
+        args: ['--runslow', './tests/']
         pass_filenames: false
         always_run: true
         verbose: true
