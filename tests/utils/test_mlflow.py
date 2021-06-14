@@ -64,6 +64,9 @@ class TestDictToMlflowParams(unittest.TestCase):
             return x
 
         dic = {"k1": "v1", "k2": {"k21": foo}}
-        exp_out = {"k1": "v1", "k2__k21": "        foo = lambda x: x\n"}
+        exp_out = {
+            "k1": "v1",
+            "k2__k21": "        def foo(x):\n            return x\n",
+        }
         obs_out = generatools.utils.mlflow.dict_to_mlflow_params(dic=dic)
         self.assertEqual(exp_out, obs_out)
