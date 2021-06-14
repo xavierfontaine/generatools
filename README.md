@@ -20,6 +20,8 @@ pip install -r requirements.txt
 
 ### Tasks list
 The following would help improve code robustness:
+- Programmatic generation & evaluation: when stabilise, add function tests.
+- Programmatic generation: when stabilise, add sanity checks on conf file used.
 - mlflow: mlflow works through global variables, which can be dangerous.
   Devising a workaround would be precious. 
 - PromptSeqsPairs: this object inherits from dataclass, which is not
