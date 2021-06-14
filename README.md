@@ -18,6 +18,16 @@ pip install -r requirements.txt
 ```
 
 
+### Tasks list
+The following would help improve code robustness:
+- mlflow: mlflow works through global variables, which can be dangerous.
+  Devising a workaround would be precious. 
+- PromptSeqsPairs: this object inherits from dataclass, which is not
+  appropriate. Especially, it prevents from elegantly checking the sanity of
+  changes in the contained data. Using a generic class, and defining functions
+  for adding metrics and the like, would be preferable.
+
+
 ### Contributing
 
 #### Pre-commit hooks
@@ -25,6 +35,13 @@ At the root of the current repo, run
 ```bash
 pre-commit install --hook-type pre-commit --hook-type pre-push
 ```
+
+#### Using mlflow
+mlflow uses global variables for keeping track of the experiment and run at
+hand. This can be pretty dangerous. For that reason, 
+all classes & functions in `generatools.utils.mlflow` assume that both `mlflow.set_tracking_uri()` and
+`mflow.set_experiment()` have been called beforehand to set the dir where all
+expe are stored, and the expe itself.
 
 #### Conventions
 **Linting**
