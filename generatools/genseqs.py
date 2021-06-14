@@ -41,15 +41,18 @@ def gen_seqs_from_prompt(
     logger.info("-- Prompt of size {}.".format(input_ids_size))
     # Prediction
     transformers.trainer_utils.set_seed(seed)
-    output = model.generate(
-        input_ids,
-        max_length=input_ids_size + max_length_after_prompt,
-        return_dict_in_generate=False,
-        output_scores=False,
-        do_sample=True,
-        num_return_sequences=num_return_sequences,
-        **kwargs
-    )
+    gen_outputs = []
+    for i in range(num_return_sequences):
+        output = model.generate(
+            input_ids,
+            max_length=input_ids_size + max_length_after_prompt,
+            return_dict_in_generate=False,
+            output_scores=False,
+            do_sample=True,
+            num_return_sequences=1,
+            **kwargs
+        )
+        gen_outputs.append(output)
     y_seqs = [tokenizer.decode(o, skip_special_tokens=True) for o in output]
     return y_seqs
 
