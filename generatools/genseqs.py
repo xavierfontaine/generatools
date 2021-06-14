@@ -1,3 +1,6 @@
+"""
+Sequence generation
+"""
 import torch
 import transformers
 import logging

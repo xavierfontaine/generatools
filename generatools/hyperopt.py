@@ -1,3 +1,6 @@
+"""
+Hyperoptimization
+"""
 import sklearn.model_selection
 from typing import Dict
 

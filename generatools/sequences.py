@@ -1,3 +1,6 @@
+"""
+Storage for generated sequences, together with their prompts, metrics etc.
+"""
 import statistics
 from dataclasses import dataclass, field
 from typing import List, Dict, Union, Optional
