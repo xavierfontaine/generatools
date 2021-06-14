@@ -3,3 +3,5 @@ mlflow==1.15.0
 # dev
 pytest==5.2.1
 pre-commit==2.13.0
+flake8==3.9.2
+black==21.6b0

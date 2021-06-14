@@ -20,6 +20,12 @@ pip install -r requirements.txt
 
 ### Contributing
 
+#### Pre-commit hooks
+At the root of the current repo, run
+```bash
+pre-commit install --hook-type pre-commit --hook-type pre-push
+```
+
 #### Conventions
 **Linting**
 
