@@ -159,3 +159,32 @@ def make_prompt_w_keywords_new(
         **kwargs,
     )
     return prompt
+
+
+def trim_gen_seq(seq: str, prompt: str, end_delimiter: str) -> str:
+    """
+    Extract generated sequence
+
+    Two steps:
+    1. Remove `prompt` (replaced by "")
+    2. Drop everything on the right of `end_delimiter`
+    """
+    seq = _left_trim_gen_seq(seq=seq, prompt=prompt)
+    seq = _right_trim_gen_seq(seq=seq, end_delimiter=end_delimiter)
+    return seq
+
+
+def _left_trim_gen_seq(seq: str, prompt: str) -> str:
+    """
+    Drop the prompt from the generated sequence.
+    """
+    seq = seq.replace(prompt, "")
+    return seq
+
+
+def _right_trim_gen_seq(seq: str, end_delimiter: str):
+    """
+    Remove anything on the rhs of `end_delimiter`
+    """
+    seq = seq.split(end_delimiter)[0]
+    return seq
