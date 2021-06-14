@@ -20,4 +20,4 @@ repos:
         verbose: true
         language: system
         types: [python]
-        stages: [push]  # Run only when trying to push
+        #stages: [push]  # Run only when trying to push
