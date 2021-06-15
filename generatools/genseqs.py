@@ -57,7 +57,7 @@ def gen_seqs_from_prompt(
     return y_seqs
 
 
-def run_grid_generation_from_conf(conf: dict, conf_filepath: str):
+def run_grid_generation_from_conf(conf: dict):
     """
     Run multiple generations based on a configuration file.
 
@@ -188,7 +188,10 @@ def run_grid_generation_from_conf(conf: dict, conf_filepath: str):
                 #    dic=xnew_ygen_list, filename=conf["mlflow_results_json_name"]
                 # )
                 # Store configuration file
-                mlflow.log_artifact(conf_filepath)
+                mlflow.log_dict(
+                    dictionary=conf,
+                    artifact_file=conf["mlflow_conf_json_name"],
+                )
                 # Store current script
                 script_filepath = os.path.realpath(__file__)
                 mlflow.log_artifact(script_filepath)
