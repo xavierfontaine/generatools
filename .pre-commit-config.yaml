@@ -4,11 +4,13 @@ repos:
     hooks:
     - id: black
       args: [-l 79]
+      stages: [commit]
 -   repo: https://gitlab.com/pycqa/flake8
     rev: 3.9.2
     hooks:
     - id: flake8
       args: ['--ignore=E501,W503', --max-line-length=79]
+      stages: [commit]
 -   repo: local
     hooks:
     -   id: tests
@@ -20,4 +22,4 @@ repos:
         verbose: true
         language: system
         types: [python]
-        stages: [commit]  # Run only when trying to push
+        stages: [commit]

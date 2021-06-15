@@ -3,11 +3,15 @@ Tools for grading
 """
 import copy
 import os
+import logging
+import mlflow
 from dataclasses import dataclass
 from typing import Dict
 
 import generatools.sequences
 import generatools.utils.text
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -244,3 +248,119 @@ class SeqsHandGrading(object):
             + "===="
         )
         return keyword_header_str
+
+
+def interactive_grading_from_mlflow_experiment(
+    conf: dict,
+    metric: LikertScale,
+) -> None:
+    """
+    Grade generated sequences in an mlflow experiment
+
+    Grading is performed only on PromptSeqsPair for which ther metric
+    scale.name is missing.
+
+    Grades will be stored in mlflow in the PromptSeqsPair objects.
+
+    Parameters
+    ----------
+    conf : dict
+        Configuration used with
+        generatools.genseqs.run_grid_generation_from_conf when generating and
+        storing sequences in mlflow.
+    metric : generatools.grading.LikertScale
+        scale to be used as a metric.
+
+    Returns
+    -------
+    None
+    """
+    # Set experiment for all mlflow commands
+    mlflow.set_tracking_uri(uri=conf["mlflow_expe_dirpath"])
+    # Set experiment for all mlflow commandso
+    mlflow.set_experiment(
+        experiment_name=conf["mlflow_expe_name"],
+    )
+    #  Get experiment id
+    experiment_id = generatools.utils.mlflow.create_expe(
+        expe_name=conf["mlflow_expe_name"],
+    )
+
+    # Get ids of all runs
+    run_ids = generatools.utils.mlflow.get_run_ids(
+        experiment_id=experiment_id, max_results=1000
+    )
+
+    # Get client
+    client = mlflow.tracking.MlflowClient(
+        tracking_uri=conf["mlflow_expe_dirpath"]
+    )
+
+    # For each run
+    for run_id in run_ids:
+        # If metric already set, go to next run
+        metric_exists = generatools.utils.mlflow.check_metrics_exist(
+            tracking_uri=conf["mlflow_expe_dirpath"],
+            run_id=run_id,
+            key=metric.name,
+        )
+        if metric_exists:
+            continue
+        # Get sequences
+        prompt_seqs_pair_list = generatools.utils.mlflow.get_json_artifact(
+            run_id=run_id, artifact_name=conf["mlflow_results_json_name"]
+        )
+        prompt_seqs_pair_list = [
+            generatools.sequences.PromptSeqsPair(**prompt_seqs_pair)
+            for prompt_seqs_pair in prompt_seqs_pair_list
+        ]
+        # Get parameters
+        params = generatools.utils.mlflow.get_run_params(run_id=run_id)
+        # Print header for this run
+        generatools.grading.PrintRunAnalysisHeader()(
+            run_name=run_id, params=params
+        )
+        # Associate grade to sequences
+        for seq_idx in range(len(prompt_seqs_pair_list)):
+            # Add grade to sequences
+            prompt_seqs_pair = prompt_seqs_pair_list[seq_idx]
+            grader = generatools.grading.SeqsHandGrading().interactive_grading
+            prompt_seqs_pair = grader(
+                prompt_seqs_pair=prompt_seqs_pair,
+                metric=metric,
+                show_raw_seq=False,
+            )
+            prompt_seqs_pair_list[seq_idx] = prompt_seqs_pair
+        prompt_seqs_pair_list = generatools.sequences.PromptSeqsPairsList(
+            prompt_seqs_pair_list
+        )
+        # Calculate overall metrics
+        if metric.level == "prompt":
+            metrics = prompt_seqs_pair_list.average_prompt_lvl_metrics()
+        elif metric.level == "sequence":
+            metrics = prompt_seqs_pair_list.average_seq_lvl_metrics()
+        # Log metrics
+        for metric_name, metric_val in metrics.items():
+            client.log_metric(
+                run_id=run_id,
+                key=metric_name,
+                value=metric_val,
+            )
+        # Save grade with sequences
+        # 1/ Remove previous dict
+        run = client.get_run(run_id)
+        dict_path = os.path.join(
+            run.info.artifact_uri, conf["mlflow_results_json_name"]
+        )
+        try:  # Works only if there is something to remove
+            os.remove(dict_path)
+            logger.debug("Removed previously existing {}".format(dict_path))
+        except Exception:
+            pass
+        # 2/ Use new dict
+        prompt_seqs_pair_list_json = prompt_seqs_pair_list.to_json()
+        client.log_dict(
+            run_id=run_id,
+            dictionary=prompt_seqs_pair_list_json,
+            artifact_file=conf["mlflow_results_json_name"],
+        )
