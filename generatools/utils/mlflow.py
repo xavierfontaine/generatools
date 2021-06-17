@@ -13,7 +13,7 @@ import inspect
 import json
 import pandas as pd
 import logging
-from typing import Union
+from typing import Union, Dict
 
 logger = logging.getLogger(__name__)
 
@@ -54,49 +54,34 @@ def create_artifact_from_str(s: str, filename: str) -> None:
         mlflow.log_artifact(artifact_tmp_path)
 
 
-def params_to_query(params: dict) -> str:
-    """Dictionary of parameters into MLFlow query
-
-    Use with mlflow.search_runs(). Numeric parameters are turned into strings.
-
-    Parameters
-    ----------
-    params : dict
-
-    Returns
-    -------
-    str
-    """
-    query_terms = [
-        "params.`" + k + "`" + '="' + str(v) + '"' for k, v in params.items()
-    ]
-    query = " and ".join(query_terms)
-    return query
-
-
-def run_w_params_exists(params: dict) -> bool:
+def run_w_params_exists(
+    params: dict, experiment_id: str, params_artifact_name: str
+) -> bool:
     """Any previous run with given parameters?
 
-    Checks whether there are runs with parameters `params` and status
-    "FINISHED" in experiment `experiment_id`
+    Checks whether there are non-deleted runs with parameters `params` and
+    status "FINISHED" in experiment `experiment_id`.
+
+    Note this is done wrt to parameters stored by the user as json
+    in `params_artifact_name`.
 
     Parameters
     ----------
     params : dict
         params
 
+    experiment_id : dict
+        experiment_id
+
     Returns
     -------
     bool
     """
-    filter_str = params_to_query(params=params)
-    filter_str += 'attributes.status = "FINISHED"'
-    runs = mlflow.search_runs(
-        filter_string=filter_str,
-        run_view_type=mlflow.entities.ViewType.ALL,
+    all_runs_params = get_json_artifact_for_all_runs(
+        experiment_id=experiment_id, artifact_name=params_artifact_name
     )
-    exist = False if (runs.shape[0] == 0) else True
-    return exist
+    similar_run_found = any([params == p for p in all_runs_params.values()])
+    return similar_run_found
 
 
 def get_expe_id(expe_name: str) -> Union[str, None]:
@@ -183,6 +168,12 @@ def check_metrics_exist(tracking_uri: str, run_id: str, key: str) -> bool:
             raise TypeError("mlflow has risen an unexpected exception.")
 
 
+def log_json_artifact(json_dict: dict, filename: str) -> None:
+    """Avoid using mlflow.log_json which is considered experimental"""
+    json_str = json.dumps(obj=json_dict)
+    create_artifact_from_str(s=json_str, filename=filename)
+
+
 def get_json_artifact(run_id: str, artifact_name: str) -> Union[list, dict]:
     """Get json artifact"""
     run = mlflow.get_run(run_id=run_id)
@@ -195,7 +186,52 @@ def get_json_artifact(run_id: str, artifact_name: str) -> Union[list, dict]:
 
 
 def get_run_params(run_id: str) -> dict:
-    """Get parameters associated to an mlflow run"""
+    """
+    Get parameters associated to an mlflow run
+
+    NOTE: this will retrieve the parameters from the params slot of mlflow
+    (which str-ify all parameters). Consider storing and loading parameters
+    from a json instead.
+    """
     run = mlflow.get_run(run_id=run_id)
     params = run.data.params
     return params
+
+
+def get_json_artifact_for_all_runs(
+    experiment_id: str, artifact_name: str
+) -> Dict[str, dict]:
+    """
+    Get json artifact associated to each run in a experiment
+
+    Retrieve only for runs that are not deleted and
+    considered "FINISHED"
+
+    Parameters
+    ----------
+    experiment_id : str
+        experiment_id
+
+    artifact_name: str
+        Name of the artifact (as was saved beforehand)
+
+    Returns
+    -------
+    Dict[str, dict]
+        dict with keys run id, values parameters
+    """
+    runs_info = mlflow.list_run_infos(
+        experiment_id=experiment_id,
+        run_view_type=mlflow.entities.ViewType.ACTIVE_ONLY,
+        max_results=1000000,
+    )
+    all_artifacts = {}
+    for run_info in runs_info:
+        run_id = run_info.run_id
+        # If status is FINISHED, then fetch the params
+        if run_info.status == "FINISHED":
+            artifact = get_json_artifact(
+                run_id=run_id, artifact_name=artifact_name
+            )
+            all_artifacts[run_id] = artifact
+    return all_artifacts

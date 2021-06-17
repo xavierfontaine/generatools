@@ -315,7 +315,9 @@ def interactive_grading_from_mlflow_experiment(
             for prompt_seqs_pair in prompt_seqs_pair_list
         ]
         # Get parameters
-        params = generatools.utils.mlflow.get_run_params(run_id=run_id)
+        params = generatools.utils.mlflow.get_json_artifact(
+            run_id=run_id, artifact_name=conf["mlflow_params_json_name"]
+        )
         # Print header for this run
         generatools.grading.PrintRunAnalysisHeader()(
             run_name=run_id, params=params

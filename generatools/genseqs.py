@@ -86,7 +86,9 @@ def run_grid_generation_from_conf(conf: dict):
     loaded_mdl_params = None  # params used during last model loading
     for params in param_grid:
         run_already_exist = generatools.utils.mlflow.run_w_params_exists(
-            params=params
+            params=params,
+            experiment_id=experiment_id,
+            params_artifact_name=conf["mlflow_params_json_name"],
         )
         # If no run with those parameters, proceed
         if not run_already_exist:
@@ -173,7 +175,12 @@ def run_grid_generation_from_conf(conf: dict):
                     )
                     prompt_seqs_pair_list.append(prompt_seqs_pair)
                 # Store parameters
+                # 1/ In params slot of mlflow
                 mlflow.log_params(params)
+                # 2/ In a json file, for re-use later (mlflow sucks on that)
+                generatools.utils.mlflow.log_json_artifact(
+                    json_dict=params, filename=conf["mlflow_params_json_name"]
+                )
                 # Store output dict as a json artifact
                 dictified_prompt_seqs_pair_list = [  # Passing prompt_seqs_pair to dict for
                     # mlflow.log_dict

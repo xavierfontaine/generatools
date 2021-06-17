@@ -23,7 +23,8 @@ The following would help improve code robustness:
 - Programmatic generation & evaluation: when stabilise, add function tests.
 - Programmatic generation: when stabilise, add sanity checks on conf file used.
 - mlflow: mlflow works through global variables, which can be dangerous.
-  Devising a workaround would be precious. 
+  A good workaround would be to set experiment and run at the beginning of each
+  function that makes use of mlflow.
 - PromptSeqsPairs: this object inherits from dataclass, which is not
   appropriate. Especially, it prevents from elegantly checking the sanity of
   changes in the contained data. Using a generic class, and defining functions
@@ -39,11 +40,17 @@ pre-commit install --hook-type pre-commit --hook-type pre-push
 ```
 
 #### Using mlflow
-mlflow uses global variables for keeping track of the experiment and run at
+1/ mlflow uses global variables for keeping track of the experiment and run at
 hand. This can be pretty dangerous. For that reason, 
 all classes & functions in `generatools.utils.mlflow` assume that both `mlflow.set_tracking_uri()` and
 `mflow.set_experiment()` have been called beforehand to set the dir where all
 expe are stored, and the expe itself.
+
+2/ `mlflow.log_params` string-ifies parameters before storing. This leads to
+ugly side-behaviors. In generatools.genseqs and generatools.grading, parameters
+are stored and retrieved from a json artifact to circumvent this issue.
+
+
 
 #### Conventions
 **Linting**
