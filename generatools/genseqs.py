@@ -142,7 +142,7 @@ def run_grid_generation_from_conf(conf: dict):
                             "remove_right_trailing_space"
                         ],
                     )
-                    logger.info("Prompt: {}".format(prompt))
+                    logger.info("Prompt:\n{}".format(prompt))
                     sequences = generatools.genseqs.gen_seqs_from_prompt(
                         prompt=prompt,
                         model=model,
