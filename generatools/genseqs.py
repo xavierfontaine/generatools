@@ -28,7 +28,7 @@ def gen_seqs_from_prompt(
     num_return_sequences: int,
     device: torch.device,
     seed: Optional[int] = None,
-    **kwargs
+    **kwargs,
 ) -> List[str]:
     """Generate `num_return_sequences` sequences based on `prompt`
 
@@ -41,7 +41,7 @@ def gen_seqs_from_prompt(
     logger.info("-- Prompt of size {}.".format(input_ids_size))
     # Prediction
     transformers.trainer_utils.set_seed(seed)
-    gen_outputs = []
+    y_seqs = []
     for i in range(num_return_sequences):
         output = model.generate(
             input_ids,
@@ -50,10 +50,13 @@ def gen_seqs_from_prompt(
             output_scores=False,
             do_sample=True,
             num_return_sequences=1,
-            **kwargs
+            **kwargs,
         )
-        gen_outputs.append(output)
-    y_seqs = [tokenizer.decode(o, skip_special_tokens=True) for o in output]
+        y_seq = [
+            tokenizer.decode(o, skip_special_tokens=True) for o in output
+        ][0]
+        y_seqs.append(y_seq)
+        print(f"{y_seqs=}")
     return y_seqs
 
 

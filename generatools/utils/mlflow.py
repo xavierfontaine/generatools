@@ -137,7 +137,11 @@ def get_run_ids(experiment_id: str, max_results: int) -> list:
         run_view_type=mlflow.entities.ViewType.ACTIVE_ONLY,
         max_results=max_results,
     )
-    runs_id = [run_info.run_id for run_info in runs_info]
+    runs_id = [
+        run_info.run_id
+        for run_info in runs_info
+        if run_info.status == "FINISHED"
+    ]
     return runs_id
 
 
