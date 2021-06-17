@@ -176,7 +176,7 @@ def run_grid_generation_from_conf(conf: dict):
                     prompt_seqs_pair_list.append(prompt_seqs_pair)
                 # Store parameters
                 # 1/ In params slot of mlflow
-                mlflow.log_params(params)
+                # mlflow.log_params(params)
                 # 2/ In a json file, for re-use later (mlflow sucks on that)
                 generatools.utils.mlflow.log_json_artifact(
                     json_dict=params, filename=conf["mlflow_params_json_name"]

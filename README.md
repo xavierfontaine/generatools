@@ -41,15 +41,16 @@ pre-commit install --hook-type pre-commit --hook-type pre-push
 
 #### Using mlflow
 1/ mlflow uses global variables for keeping track of the experiment and run at
-hand. This can be pretty dangerous. For that reason, 
+hand. This can be pretty dangerous. For that reason,
 all classes & functions in `generatools.utils.mlflow` assume that both `mlflow.set_tracking_uri()` and
 `mflow.set_experiment()` have been called beforehand to set the dir where all
 expe are stored, and the expe itself.
 
 2/ `mlflow.log_params` string-ifies parameters before storing. This leads to
-ugly side-behaviors. In generatools.genseqs and generatools.grading, parameters
-are stored and retrieved from a json artifact to circumvent this issue.
-
+ugly side-behaviors. Also, there is a 250-characters limit to parameters alues.
+In generatools.genseqs and generatools.grading, parameters
+are thus stored and retrieved from a json artifact to circumvent these
+limitations.
 
 
 #### Conventions
