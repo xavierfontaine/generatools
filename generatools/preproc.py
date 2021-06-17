@@ -11,7 +11,8 @@ def prompt_formatter(
     txts: Optional[List[str]] = None,
     ex_sep: str = "",
     ex_add_numeral: bool = False,
-    ex_postnum_starter: str = "",
+    ex_num_lhs: str = "",
+    ex_num_rhs: str = "",
     ex_kws_lhs: str = "",
     ex_kws_sep: str = "",
     ex_kws_rhs: str = "",
@@ -40,8 +41,10 @@ def prompt_formatter(
         ex_sep
     ex_add_numeral : bool
         ex_add_numeral
-    ex_postnum_starter : str
-        ex_postnum_starter
+    ex_num_lhs : str
+        ex_num_rhs
+    ex_num_rhs : str
+        ex_num_rhs
     ex_kws_lhs : str
         ex_kws_lhs
     ex_kws_sep : str
@@ -72,7 +75,7 @@ def prompt_formatter(
     ...     ],
     ...     ex_sep="\n",
     ...     ex_add_numeral=True,
-    ...     ex_postnum_starter=". ",
+    ...     ex_num_rhs=". ",
     ...     ex_kws_sep=", ",
     ...     ex_kws_lhs="Keywords: \"",
     ...     ex_kws_rhs="\"",
@@ -121,7 +124,7 @@ def prompt_formatter(
     if ex_add_numeral and len(examples_list) != 0:
         for i in range(len(examples_list)):
             examples_list[i] = (
-                str(i + 1) + ex_postnum_starter + examples_list[i]
+                ex_num_lhs + str(i + 1) + ex_num_rhs + examples_list[i]
             )
     # Assemblage
     examples = ex_sep.join(examples_list)

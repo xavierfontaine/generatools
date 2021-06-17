@@ -80,7 +80,8 @@ class TestPromptFormatter(unittest.TestCase):
             ],
             ex_sep="[exsep]",
             ex_add_numeral=True,
-            ex_postnum_starter="[postnum]",
+            ex_num_lhs="[prenum]",
+            ex_num_rhs="[postnum]",
             ex_kws_sep="[kwsep]",
             ex_kws_lhs="[kwlhs]",
             ex_kws_rhs="[kwrhs]",
@@ -89,11 +90,11 @@ class TestPromptFormatter(unittest.TestCase):
         )
         exp_out = (
             "This is an intro!"
-            "1[postnum][kwlhs]hey[kwsep]lad[kwrhs][txtlhs]I'm a cow[txtrhs]"
+            "[prenum]1[postnum][kwlhs]hey[kwsep]lad[kwrhs][txtlhs]I'm a cow[txtrhs]"
             "[exsep]"
-            "2[postnum][kwlhs]howdy[kwrhs][txtlhs]mooh[txtrhs]"
+            "[prenum]2[postnum][kwlhs]howdy[kwrhs][txtlhs]mooh[txtrhs]"
             "[exsep]"
-            "3[postnum][kwlhs]how[kwrhs][txtlhs]"
+            "[prenum]3[postnum][kwlhs]how[kwrhs][txtlhs]"
         )
         assert exp_out == obs_out
 
