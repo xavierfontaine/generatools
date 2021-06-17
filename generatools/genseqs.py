@@ -56,7 +56,6 @@ def gen_seqs_from_prompt(
             tokenizer.decode(o, skip_special_tokens=True) for o in output
         ][0]
         y_seqs.append(y_seq)
-        print(f"{y_seqs=}")
     return y_seqs
 
 
