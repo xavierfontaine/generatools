@@ -18,10 +18,10 @@ pip install -r requirements.txt
 ```
 
 
-### Tasks list
-The following would help improve code robustness:
-- Programmatic generation & evaluation: when stabilise, add function tests.
-- Programmatic generation: when stabilise, add sanity checks on conf file used.
+## Tasks list
+The following would improve code robustness:
+- Programmatic generation & evaluation: when stabilised, add functional tests.
+- Programmatic generation: when stabilised, add sanity checks on conf file used.
 - mlflow: mlflow works through global variables, which can be dangerous.
   A good workaround would be to set experiment and run at the beginning of each
   function that makes use of mlflow.
@@ -31,15 +31,15 @@ The following would help improve code robustness:
   for adding metrics and the like, would be preferable.
 
 
-### Contributing
+## Contributing
 
-#### Pre-commit hooks
+### Pre-commit hooks
 At the root of the current repo, run
 ```bash
 pre-commit install --hook-type pre-commit --hook-type pre-push
 ```
 
-#### Using mlflow
+### Using mlflow
 1/ mlflow uses global variables for keeping track of the experiment and run at
 hand. This can be pretty dangerous. For that reason,
 all classes & functions in `generatools.utils.mlflow` assume that both `mlflow.set_tracking_uri()` and
@@ -53,15 +53,15 @@ are thus stored and retrieved from a json artifact to circumvent these
 limitations.
 
 
-#### Conventions
-**Linting**
+### Conventions
+#### Linting
 
 Before commiting, use `black` for code formatting, with line-length set to 79.
 ```bash
 black . -l 79
 ```
 
-**Printing and logging**
+#### Printing and logging
 
 All the priting should happen through a logger. Do not use `print`.
 
@@ -81,12 +81,12 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 ```
 
-**Exceptions**
+#### Exceptions
 
 If you want to both raise an error and log it, you can use 
 `mnemgen.utils.logging.log_and_raise`.
 
-**Typing hint**
+#### Typing hint
 
 Following Google style rules [here](https://google.github.io/styleguide/pyguide.html#s2.21-type-annotated-code) and [here](https://google.github.io/styleguide/pyguide.html#s3.19-type-annotations).
 
@@ -94,7 +94,7 @@ This makes the code easy to inspect statically. Especially, the IDE becomes
 able to show the definition of any argument, which helps understanding their
 manipulation.
 
-**Docstring**
+#### Docstring
 
 Docstrings follow the [numpy conventions](https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_numpy.html#example-numpy).
 
@@ -105,7 +105,7 @@ They may be much lighter for private functions, methods and classes.
 
 For each module, put a docstring in the `__init__.py` file.
 
-**Testing**
+#### Testing
 Tests should be marked:
 * Slow tests: use decorator `@pytest.mark.slow`
 * Unit tests: use decorator `@pytest.mark.unit`
