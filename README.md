@@ -1,5 +1,9 @@
 # Generatools
 Toolbox for text generation
+* Programmatic prompting
+* Grid exploration of prompt and LLM parameters
+* Experiment storage
+* Evaluation
 
 ## Install
 ### Cuda 11.0
